@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const path = require("path")
 const mongoose = require("mongoose");
 
 //Import Routes
@@ -30,12 +31,11 @@ mongoose.connect(
 );
 
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use("/uploads", express.static("uploads"));
 app.use(bodyParser.json());
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'))
+app.use('/uploads', express.static(path.join(__dirname, './uploads')));
 app.use((req, res, next) => {
 	res.header("Access-Control-Allow-Origin", "*");
 	res.header(

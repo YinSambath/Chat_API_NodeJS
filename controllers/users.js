@@ -35,7 +35,7 @@ exports.user_register = async (req, res) => {
 	if (error) return res.status(400).json(error.details[0].message);
 	const phoneExist = await User.findOne({ phone: req.body.phone });
 	if (phoneExist) {
-		return res.status(400).json({ error: "User already exists!" });
+		return res.status(400).send("User already exists!");
 	}
 	//Hash the password
 	const salt = await bcrypt.genSalt(10);
@@ -65,11 +65,8 @@ exports.user_register = async (req, res) => {
 		res.status(200).json({
 			savedUser,
 		});
-		console.log("Hello");
 	} catch (err) {
-		res.status(400).send({
-			message: err.message,
-		});
+		res.status(400).send(err.message);
 	}
 };
 exports.user_login = async (req, res) => {
@@ -77,10 +74,10 @@ exports.user_login = async (req, res) => {
 	const { error } = loginValidation(req.body);
 	if (error) return res.status(400).send(error.details[0].message);
 	const user = await User.findOne({ phone: req.body.phone });
-	const userId = user._id;
 	if (!user) {
 		return res.status(400).send("User is not found!");
 	}
+	const userId = user._id;
 	const validPass = await bcrypt.compare(req.body.password, user.password);
 	if (!validPass) {
 		return res.status(400).json({ message: "Password is incorrect!" });
@@ -165,22 +162,20 @@ exports.user_profile = async (req, res) => {
 };
 exports.upload_update_profile = async (req, res) => {
 	const userId = req.params.userId;
-	const newProfile = req.file.path;
-	const str = newProfile
-			.split("C:\\Users\\samba\\OneDrive\\Desktop\\mcircle_project_api\\uploads\\")
-			.toString();
-	const fileName = str.replace(/,/g, "");
-	console.log("Filename: ", fileName);
+	// const newProfile = req.file.path;
+	// console.log(req.file)
+	// const str = newProfile
+	// 		.split("C:\\Users\\samba\\OneDrive\\Desktop\\mcircle_project_api\\uploads\\")
+	// 		.toString();
+	// const fileName = str.replace(/,/g, "");
 	const user = await User.findById(userId);
 	// await getCurrentFilenames();
 	if (!user) {
 		return res.status(400).json({ error: "User not found" });
 	} else if (user && user.userProfile != "") {
 		const oldProfile = user.userProfile;
-		const oldProPath = "C:/Users/samba/OneDrive/Desktop/mcircle_project_api/uploads/" + oldProfile;
-		console.log("Old profile: " , oldProPath);
+		const oldProPath = path.join(__dirname + "../uploads/") + oldProfile;
 		// *** Function for upload and delete image from folder upload ***
-		console.log(1);
 		if (fs.existsSync(oldProPath)) {
 			console.log("Existed path");
 			await fs.unlink(oldProPath, (err) => {
@@ -189,19 +184,16 @@ exports.upload_update_profile = async (req, res) => {
 					return res.status(404).json("Somthing went wrong!");
 				}
 			});
-			const uploadOrUpdate = await User.findByIdAndUpdate(
-				userId, 
-				{userProfile: fileName},
-				{new: true}
-				);
-			return res.status(200).json({
-				message: "Your profile have been changed.",
-				data: uploadOrUpdate
-			});
-		} else {
-			console.log("Fixed error please!");
-			return res.status(404).json("Something went wrong!");
 		}
+		const uploadOrUpdate = await User.findByIdAndUpdate(
+			userId, 
+			{userProfile: req.file.filename},
+			{new: true}
+			);
+		return res.status(200).json({
+			message: "Your profile have been changed.",
+			data: uploadOrUpdate
+		});
 	} else {
 		const uploadOrUpdate = await User.findByIdAndUpdate(userId, {
 			userProfile: fileName,
