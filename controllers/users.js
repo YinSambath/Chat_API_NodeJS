@@ -172,7 +172,8 @@ exports.upload_update_profile = async (req, res) => {
 	// await getCurrentFilenames();
 	if (!user) {
 		return res.status(400).json({ error: "User not found" });
-	} else if (user && user.userProfile != "") {
+	} 
+	if (user && user.userProfile != "") {
 		const oldProfile = user.userProfile;
 		const oldProPath = path.join(__dirname + "../uploads/") + oldProfile;
 		// *** Function for upload and delete image from folder upload ***
@@ -185,24 +186,16 @@ exports.upload_update_profile = async (req, res) => {
 				}
 			});
 		}
-		const uploadOrUpdate = await User.findByIdAndUpdate(
-			userId, 
-			{userProfile: req.file.filename},
-			{new: true}
-			);
-		return res.status(200).json({
-			message: "Your profile have been changed.",
-			data: uploadOrUpdate
-		});
-	} else {
-		const uploadOrUpdate = await User.findByIdAndUpdate(userId, {
-			userProfile: fileName,
-		}, {new: true});
-		return res.status(200).json({
-			message: "Upload successfully",
-			data: uploadOrUpdate
-		});
-	}
+	} 
+	const uploadOrUpdate = await User.findByIdAndUpdate(
+		userId, 
+		{userProfile: req.file.filename},
+		{new: true}
+		);
+	return res.status(200).json({
+		message: "Your profile have been changed.",
+		data: uploadOrUpdate
+	});
 };
 exports.update_user = async (req, res) => {
 	try {
