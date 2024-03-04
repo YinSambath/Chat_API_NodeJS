@@ -162,14 +162,7 @@ exports.user_profile = async (req, res) => {
 };
 exports.upload_update_profile = async (req, res) => {
 	const userId = req.params.userId;
-	// const newProfile = req.file.path;
-	// console.log(req.file)
-	// const str = newProfile
-	// 		.split("C:\\Users\\samba\\OneDrive\\Desktop\\mcircle_project_api\\uploads\\")
-	// 		.toString();
-	// const fileName = str.replace(/,/g, "");
 	const user = await User.findById(userId);
-	// await getCurrentFilenames();
 	if (!user) {
 		return res.status(400).json({ error: "User not found" });
 	} 

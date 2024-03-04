@@ -6,6 +6,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const path = require("path")
 const mongoose = require("mongoose");
+const socketController = require('./controllers/socket_controller');
 
 //Import Routes
 const authRoute = require("./routes/auth");
@@ -18,6 +19,7 @@ const planningRoute = require("./routes/planning");
 const actionPlanningRoute = require("./routes/actionPlanning");
 const meetingRoute = require("./routes/meeting");
 const actionMeetingRoute = require("./routes/actionMeeting");
+const chatRoute = require("./routes/chat");
 dotenv.config();
 
 //connect to DB server
@@ -61,43 +63,14 @@ app.use("/api/user/meeting", meetingRoute);
 app.use("/api/user/actionMeeting", actionMeetingRoute);
 app.use("/api/user/planning", planningRoute);
 app.use("/api/user/actionPlanning", actionPlanningRoute);
+app.use("/api/user/chat", chatRoute);
 
 const PORT = process.env.PORT || 3000;
 const server = require("http").createServer(app);
-const socketIO = require("socket.io")(server);
-const messages = [];
-
-socketIO.on("connection",  (socket) => {
-	const username = socket.handshake.query.username;
-	const userId = socket.handshake.query.userId;
-	var targetId = 'AB';
-	console.log("Connected to ", username , userId);
-	//listens for new messages coming in
-	socket.on("message", (data) => {
-		targetId = data.targetId;
-		console.log(data);
-		const message = {
-			senderUsername: username,
-			senderId: userId,
-			message: data.message,
-			sentAt: data.sentAt
-		}
-		messages.push(message)
-		console.log(targetId, message);
-		socketIO.emit(targetId, message)
-	});
-	
-
-	//listens when a user is disconnected from the server
-	socket.on("disconnect", function () {
-		console.log("Disconnected...", socket.id);
-	});
-
-	//listens when there's an error detected and logs the error on the console
-	socket.on("error", function (err) {
-		console.log("Error detected", socket.id);
-		console.log(err);
-	});
-});
+const socketIO = require("socket.io")(server, {
+	maxHttpBufferSize: 10e7,
+	pingTimeout: 30000, // Set the timeout in milliseconds (adjust as needed)
+  });
+socketController.handleSocket(socketIO);
 
 server.listen(PORT, () => console.log("Server UP and running ", PORT));

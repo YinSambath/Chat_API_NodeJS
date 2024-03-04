@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 const Trip = mongoose.model("Trip");
-const User = mongoose.model("User");
 const Contact = mongoose.model("Contact");
 const Action = require("../models/ActionTrip");
 const moment = require("moment");
 const { createActionValidation } = require("../validations/validation");
 const ActionMeeting = require("../models/ActionMeeting");
+const User = require("../models/User");
 
 exports.create_action = async (req, res) => {
 	const { error } = createActionValidation(req.body);
@@ -245,13 +245,3 @@ exports.short_all = async (req, res) => {
 	const getLastest = await Action.find({userId: req.user.userId}).sort({createdDate:-1});
 	return res.status(200).json({data: getLastest});
 }
-
-// exports.delete_all = async (req, res) => {
-// 	const deleteAll = await Action.remove({});
-	
-// 	if (deleteAll) {
-// 		return res.json("done");
-// 	} else {
-// 		return res.json("error");
-// 	}
-// }
